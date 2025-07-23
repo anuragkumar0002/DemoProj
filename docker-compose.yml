@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - dev-network
+
+  tomcat:
+    build:
+      context: .
+      dockerfile: Dockerfile.tomcat
+    container_name: tomcat
+    ports:
+      - "7070:8080"
+    depends_on:
+      - jenkins
+    networks:
+      - dev-network
+
+  sonarqube:
+    image: sonarqube:lts
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    depends_on:
+      - db
+    networks:
+      - dev-network
+
+  db:
+    image: postgres:13
+    container_name: sonar-db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+volumes:
+  jenkins_home:
+  sonar_db_data:
+
+networks:
+  dev-network:
