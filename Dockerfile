@@ -1,24 +1,38 @@
-# Use Maven to build the app
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# # Use Maven to build the app
+# FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY . .
+# COPY . .
 
-RUN mvn clean package -DskipTests
+# RUN mvn clean package -DskipTests
+
+# # Use Tomcat base image
+# FROM tomcat:10.1-jdk17-temurin
+
+# ENV WAR_NAME=Streaming-0.0.1-SNAPSHOT.war
+
+# # Remove default apps
+# RUN rm -rf /usr/local/tomcat/webapps/*
+
+# # Copy built WAR file
+# COPY --from=build /app/target/${WAR_NAME} /usr/local/tomcat/webapps/${WAR_NAME}
+
+# # Expose Tomcat port
+# EXPOSE 7070
+
+# CMD ["catalina.sh", "run"]
 
 # Use Tomcat base image
-FROM tomcat:10.1-jdk17-temurin
-
-ENV WAR_NAME=Streaming-0.0.1-SNAPSHOT.war
+FROM tomcat:10.1.43-jdk17
 
 # Remove default apps
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Copy built WAR file
-COPY --from=build /app/target/${WAR_NAME} /usr/local/tomcat/webapps/${WAR_NAME}
+# Copy WAR file into webapps
+COPY target/Streaming-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
-# Expose Tomcat port
-EXPOSE 7070
+# Expose port
+EXPOSE 6666
 
-CMD ["catalina.sh", "run"]
+# Start Tomcat (already CMD in base image)
